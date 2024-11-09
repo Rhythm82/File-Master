@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 
 app.use(express.json());
-const port = process.env.PORT || 3000;
+const port = https://file-master.onrender.com;
 app.use(express.static('public'));
 
 function normalizePath(inputPath) {
