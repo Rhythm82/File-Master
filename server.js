@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 
 app.use(express.json());
-const port = https://file-master.onrender.com;
+const port =  process.env.PORT || 3000;
 app.use(express.static('public'));
 
 function normalizePath(inputPath) {
@@ -112,6 +112,5 @@ app.post('/delete', (req, res) => {
 });
 
 app.listen(port, () => {
-
     console.log(`Server is running on http://localhost:${port}`);
 });
