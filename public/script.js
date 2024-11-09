@@ -1,185 +1,82 @@
-// document.getElementById('previewButton').addEventListener('click', async () => {
-//     const folderPath = document.getElementById('folderPath').value;
-//     const response = await fetch(`/preview?path=${encodeURIComponent(folderPath)}`);
-//     const files = await response.json();
-//     const fileList = document.getElementById('fileList');
-//     const previewSection = document.getElementById('previewSection');
+        document.getElementById('previewButton').addEventListener('click', async () => {
+            const folderPath = document.getElementById('folderPath').value;
+            if (!folderPath) {
+                alert("Please enter a valid folder path.");
+                return;
+            }
 
-//     fileList.innerHTML = '';  // Clear previous list
+            const response = await fetch(`/preview?path=${encodeURIComponent(folderPath)}`);
+            const items = await response.json();
+            const fileList = document.getElementById('fileList');
+            const previewSection = document.getElementById('previewSection');
 
-//     if (Array.isArray(files)) {
-//         files.forEach(file => {
-//             const listItem = document.createElement('li');
-//             listItem.textContent = file;
-//             listItem.classList.add('py-1');
-//             fileList.appendChild(listItem);
-//         });
-//     } else {
-//         fileList.innerHTML = `<li class="text-red-500">${files.error}</li>`;
-//     }
+            fileList.innerHTML = '';  // Clear previous list
 
-//     previewSection.style.display = 'block';
-// });
+            if (Array.isArray(items) && items.length > 0) {
+                items.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('flex', 'justify-between', 'items-center', 'py-1');
 
-// // Rename files
-// document.getElementById('renameButton').addEventListener('click', async () => {
-//     const folderPath = document.getElementById('folderPath').value;
-//     const oldSubstring = document.getElementById('oldSubstring').value;
-//     const newSubstring = document.getElementById('newSubstring').value;
+                    const itemText = document.createElement('span');
+                    itemText.textContent = `${item.name} (${item.type})`;
+                    listItem.appendChild(itemText);
 
-//     const response = await fetch('/rename', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ path: folderPath, oldSubstring, newSubstring })
-//     });
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.classList.add('px-2', 'py-1', 'bg-red-600', 'rounded', 'hover:bg-red-500');
+                    deleteButton.addEventListener('click', async () => {
+                        const confirmDelete = confirm(`Are you sure you want to delete "${item.name}"?`);
+                        if (confirmDelete) {
+                            await deleteFile(item.path);
+                            listItem.remove();
+                        }
+                    });
 
-//     const result = await response.json();
-//     alert(result.message || result.error);
-// });
+                    listItem.appendChild(deleteButton);
+                    fileList.appendChild(listItem);
+                });
+            } else {
+                fileList.innerHTML = `<li class="text-red-500">No files or folders found or invalid folder path.</li>`;
+            }
 
-// // Show Create File Popup
-// document.getElementById('createButton').addEventListener('click', () => {
-//     document.getElementById('createFilePopup').style.display = 'flex';
-// });
+            previewSection.style.display = 'block';
+        });
 
-// // Create a new file
-// document.getElementById('createFileBtn').addEventListener('click', async () => {
-//     const folderPath = document.getElementById('folderPath').value;
-//     const newFileName = document.getElementById('newFileName').value;
+        async function deleteFile(filePath) {
+            const response = await fetch('/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath })
+            });
+            const result = await response.json();
+            alert(result.message || result.error);
+        }
 
-//     const response = await fetch('/create', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ path: folderPath, newFileName })
-//     });
+        document.getElementById('renameButton').addEventListener('click', async () => {
+            const folderPath = document.getElementById('folderPath').value;
+            const oldSubstring = document.getElementById('oldSubstring').value;
+            const newSubstring = document.getElementById('newSubstring').value;
 
-//     const result = await response.json();
-//     alert(result.message || result.error);
-//     document.getElementById('createFilePopup').style.display = 'none';
-// });
+            const response = await fetch('/rename', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: folderPath, oldSubstring, newSubstring })
+            });
 
-// // Close Create File Popup
-// document.getElementById('closeCreateFileBtn').addEventListener('click', () => {
-//     document.getElementById('createFilePopup').style.display = 'none';
-// });
+            const result = await response.json();
+            alert(result.message || result.error);
+        });
 
-// // Show Delete File Popup
-// document.getElementById('deleteButton').addEventListener('click', () => {
-//     document.getElementById('deleteFilePopup').style.display = 'flex';
-// });
+        document.getElementById('createButton').addEventListener('click', async () => {
+            const folderPath = document.getElementById('folderPath').value;
+            const newFileName = document.getElementById('newFileName').value;
 
-// // Delete selected file
-// document.getElementById('deleteFileBtn').addEventListener('click', async () => {
-//     const folderPath = document.getElementById('folderPath').value;
-//     const fileName = document.getElementById('deleteFileSelect').value;
+            const response = await fetch('/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: folderPath, newFileName })
+            });
 
-//     const response = await fetch('/delete', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ path: folderPath, fileName })
-//     });
-
-//     const result = await response.json();
-//     alert(result.message || result.error);
-//     document.getElementById('deleteFilePopup').style.display = 'none';
-// });
-
-// // Close Delete File Popup
-// document.getElementById('closeDeleteFileBtn').addEventListener('click', () => {
-//     document.getElementById('deleteFilePopup').style.display = 'none';
-// });
-
-// document.getElementById('previewButton').addEventListener('click', () => {
-//     const folderPath = document.getElementById('folderPath').value;
-
-//     fetch('/getFiles', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ folderPath }),
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             const previewContainer = document.getElementById('previewContainer');
-//             previewContainer.innerHTML = '';
-//             data.filesAndFolders.forEach(item => {
-//                 const div = document.createElement('div');
-//                 div.textContent = item.isDirectory ? `[Folder] ${item.name}` : item.name;
-//                 previewContainer.appendChild(div);
-//             });
-//         } else {
-//             alert(data.message);
-//         }
-//     });
-// });
-
-// document.getElementById('renameButton').addEventListener('click', () => {
-//     const folderPath = document.getElementById('folderPath').value;
-//     const oldString = document.getElementById('oldString').value;
-//     const newString = document.getElementById('newString').value;
-
-//     fetch('/rename', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ oldPath: folderPath + '/' + oldString, newPath: folderPath + '/' + newString }),
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             alert('Files renamed successfully');
-//             document.getElementById('previewButton').click();  // Refresh the preview
-//         } else {
-//             alert(data.message);
-//         }
-//     });
-// });
-
-// document.getElementById('createButton').addEventListener('click', () => {
-//     const folderPath = document.getElementById('folderPath').value;
-//     const newFile = prompt('Enter new file name:');
-//     if (!newFile) return;
-
-//     fetch('/create', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ filePath: folderPath + '/' + newFile }),
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             alert('File created successfully');
-//             document.getElementById('previewButton').click();  // Refresh the preview
-//         } else {
-//             alert(data.message);
-//         }
-//     });
-// });
-
-// document.getElementById('deleteButton').addEventListener('click', () => {
-//     const folderPath = document.getElementById('folderPath').value;
-//     const fileToDelete = prompt('Enter file name to delete:');
-//     if (!fileToDelete) return;
-
-//     fetch('/delete', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ filePath: folderPath + '/' + fileToDelete }),
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             alert('File deleted successfully');
-//             document.getElementById('previewButton').click();  // Refresh the preview
-//         } else {
-//             alert(data.message);
-//         }
-//     });
-// });
+            const result = await response.json();
+            alert(result.message || result.error);
+        });
